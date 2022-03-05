@@ -1,13 +1,18 @@
 package com.yjhsunnyweather.android.ui.weather
 
+import android.content.Context
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.yjhsunnyweather.android.R
@@ -26,10 +31,12 @@ class WeatherActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        //将背景图和状态栏融合 todo
-        val decorView = window.decorView
-        decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-        window.statusBarColor = Color.TRANSPARENT
+        //将背景图和状态栏融合
+        if (Build.VERSION.SDK_INT >= 21) {
+            val decorView = window.decorView
+            decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            window.statusBarColor = Color.TRANSPARENT
+        }
 
         //从viewModel获取数据，初始化时把数据传入viewModel
         setContentView(R.layout.activity_weather)
@@ -39,8 +46,8 @@ class WeatherActivity : AppCompatActivity() {
         if (viewModel.locationLat.isEmpty()) {
             viewModel.locationLat = intent.getStringExtra("location_lat") ?: ""
         }
-        if (viewModel.palceName.isEmpty()) {
-            viewModel.palceName = intent.getStringExtra("place_name") ?: ""
+        if (viewModel.placeName.isEmpty()) {
+            viewModel.placeName = intent.getStringExtra("place_name") ?: ""
         }
         viewModel.weatherLiveData.observe(this, Observer { result ->
             val weather = result.getOrNull()
@@ -50,13 +57,41 @@ class WeatherActivity : AppCompatActivity() {
                 Toast.makeText(this, "钢铁侠无法成功获取天气信息", Toast.LENGTH_SHORT).show()
                 result.exceptionOrNull()?.printStackTrace()
             }
+            swipeRefresh.isRefreshing = false //请求天气结束后，隐藏刷新进度条
         })
-        viewModel.refreshWeather(viewModel.locationLng, viewModel.locationLat)
+        swipeRefresh.setColorSchemeColors(resources.getColor(R.color.colorPrimary))
+        refreshWeather()
+        //下拉监听
+        swipeRefresh.setOnRefreshListener {
+            refreshWeather()
+        }
+
+        //滑动菜单
+        navBtn.setOnClickListener{
+            drawerLayout.openDrawer(GravityCompat.START)
+        }
+        drawerLayout.addDrawerListener(object : DrawerLayout.DrawerListener{
+            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}
+            override fun onDrawerOpened(drawerView: View) {}
+            override fun onDrawerStateChanged(newState: Int) {}
+            override fun onDrawerClosed(drawerView: View) {
+                //当滑动菜单隐藏时，也要隐藏输入法
+                val maneger = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                maneger.hideSoftInputFromWindow(drawerView.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
+            }
+
+
+        })
     }
 
+    //请求天气
+    fun refreshWeather(){
+        viewModel.refreshWeather(viewModel.locationLng, viewModel.locationLat)
+        swipeRefresh.isRefreshing = true
+    }
     //往布局中填充数据
     private fun showWeatherInfo(weather: Weather) {
-        placeName.text = viewModel.palceName
+        placeName.text = viewModel.placeName
         val realtime = weather.realtime
         val daily = weather.daily
         // 填充now.xml布局中数据

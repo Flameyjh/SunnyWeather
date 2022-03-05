@@ -13,7 +13,7 @@ class WeatherViewModel : ViewModel() {
     //界面相关数据，保证手机旋转时不会消失
     var locationLng = ""
     var locationLat = ""
-    var palceName = ""
+    var placeName = ""
 
     //使用Transformations.switchMap来观察searchLivedata对象
     val weatherLiveData = Transformations.switchMap(locationLivedata) { location->

@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.yjhsunnyweather.android.MainActivity
 import com.yjhsunnyweather.android.R
 import com.yjhsunnyweather.android.ui.weather.WeatherActivity
 import kotlinx.android.synthetic.main.fragment_place.*
@@ -33,7 +34,7 @@ class PlaceFragment : Fragment() {
         super.onActivityCreated(savedInstanceState)
 
         //使用持久化数据。若有，则直接跳转到具体气温页面
-        if(viewModel.isPlaceSaved()){
+        if(viewModel.isPlaceSaved() && activity is MainActivity){
             val place = viewModel.getSavedPlace()
             val intent = Intent(context, WeatherActivity::class.java).apply {
                 putExtra("location_lng", place.location.lng)
