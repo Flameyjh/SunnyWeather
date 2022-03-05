@@ -12,4 +12,4 @@ data class Place(
     val address: String
 )
 
-data class Location(val lng: String, val lat: String)
+data class Location(var lng: String, val lat: String)

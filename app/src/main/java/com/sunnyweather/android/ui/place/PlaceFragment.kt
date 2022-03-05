@@ -8,14 +8,14 @@ import android.widget.Toast
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.sunnyweather.android.R
 import kotlinx.android.synthetic.main.fragment_place.*
 
 
 class PlaceFragment : Fragment() {
-    val viewModel by lazy { ViewModelProvider(this).get(PlaceViewModel::class.java) }
+    val viewModel by lazy { ViewModelProviders.of(this).get(PlaceViewModel::class.java) }
 
     private lateinit var adapter: PlaceAdapter
 
@@ -35,7 +35,7 @@ class PlaceFragment : Fragment() {
         adapter = PlaceAdapter(this, viewModel.placeList)
         recyclerView.adapter = adapter
 
-        //观察输入
+        //观察用户输入
         searchPlaceEdit.addTextChangedListener { editable ->
             val content = editable.toString()
             if (content.isNotEmpty()) {
